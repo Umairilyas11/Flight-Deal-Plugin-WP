@@ -262,6 +262,11 @@ No. The widgets work with the free version of Elementor.
 
 ## Changelog
 
+### 1.0.2
+
+- Changed default CTA button text from "Book Now" to "Inquire Now"
+- Added Default Booking URL setting as a global fallback for deals without their own URL
+
 ### 1.0.1
 
 - Fixed activation fatal error caused by missing helper function dependency in activation hook

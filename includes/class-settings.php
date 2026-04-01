@@ -27,7 +27,8 @@ class GFD_Settings {
 		$sanitized = array();
 		$sanitized['default_currency']   = isset( $input['default_currency'] )   ? sanitize_text_field( $input['default_currency'] )   : 'USD';
 		$sanitized['currency_position']  = isset( $input['currency_position'] )  ? sanitize_text_field( $input['currency_position'] )  : 'before';
-		$sanitized['book_now_text']       = isset( $input['book_now_text'] )       ? sanitize_text_field( $input['book_now_text'] )       : 'Book Now';
+		$sanitized['book_now_text']       = isset( $input['book_now_text'] )       ? sanitize_text_field( $input['book_now_text'] )       : 'Inquire Now';
+		$sanitized['default_booking_url'] = isset( $input['default_booking_url'] ) ? esc_url_raw( $input['default_booking_url'] ) : '';
 		$sanitized['hide_expired_global'] = isset( $input['hide_expired_global'] ) ? '1' : '0';
 		$sanitized['archive_slug']        = isset( $input['archive_slug'] )        ? sanitize_title( $input['archive_slug'] )            : 'flight-deals';
 		$sanitized['ga_book_now']         = isset( $input['ga_book_now'] )         ? '1' : '0';
@@ -67,9 +68,16 @@ class GFD_Settings {
 						</td>
 					</tr>
 					<tr>
-						<th scope="row"><label for="gfd_book_now_text"><?php esc_html_e( '"Book Now" Button Text', 'gofly-flight-deals' ); ?></label></th>
-						<td><input type="text" name="gfd_settings[book_now_text]" id="gfd_book_now_text" value="<?php echo esc_attr( $opts['book_now_text'] ?? 'Book Now' ); ?>" class="regular-text" /></td>
+						<th scope="row"><label for="gfd_book_now_text"><?php esc_html_e( '"Inquire Now" Button Text', 'gofly-flight-deals' ); ?></label></th>
+						<td><input type="text" name="gfd_settings[book_now_text]" id="gfd_book_now_text" value="<?php echo esc_attr( $opts['book_now_text'] ?? 'Inquire Now' ); ?>" class="regular-text" /></td>
 					</tr>
+					<tr>
+    <th scope="row"><label for="gfd_default_booking_url"><?php esc_html_e( 'Default Booking URL', 'gofly-flight-deals' ); ?></label></th>
+    <td>
+        <input type="url" name="gfd_settings[default_booking_url]" id="gfd_default_booking_url" value="<?php echo esc_url( $opts['default_booking_url'] ?? '' ); ?>" class="regular-text" placeholder="https://" />
+        <p class="description"><?php esc_html_e( 'Used on any deal that does not have its own Booking URL set.', 'gofly-flight-deals' ); ?></p>
+    </td>
+</tr>
 					<tr>
 						<th scope="row"><?php esc_html_e( 'Hide Expired Deals Globally', 'gofly-flight-deals' ); ?></th>
 						<td>

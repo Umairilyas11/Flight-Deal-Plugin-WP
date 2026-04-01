@@ -20,7 +20,10 @@ $stops          = gofly_flight_deals_get_meta( $post_id, '_gfd_stops' );
 $departure      = gofly_flight_deals_get_meta( $post_id, '_gfd_departure_date' );
 $flexibility    = gofly_flight_deals_get_meta( $post_id, '_gfd_travel_date_flexibility' );
 $badge          = gofly_flight_deals_get_meta( $post_id, '_gfd_deal_badge' );
-$booking_url    = gofly_flight_deals_get_meta( $post_id, '_gfd_booking_url' );
+$booking_url = gofly_flight_deals_get_meta( $post_id, '_gfd_booking_url' );
+if ( empty( $booking_url ) ) {
+    $booking_url = gofly_flight_deals_get_option( 'default_booking_url', '' );
+}
 $is_featured    = gofly_flight_deals_get_meta( $post_id, '_gfd_is_featured' );
 $expiry         = gofly_flight_deals_get_meta( $post_id, '_gfd_deal_expiry' );
 

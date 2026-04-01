@@ -25,7 +25,10 @@ while ( have_posts() ) :
 	$flexibility  = gofly_flight_deals_get_meta( $post_id, '_gfd_travel_date_flexibility' );
 	$duration     = gofly_flight_deals_get_meta( $post_id, '_gfd_duration_nights' );
 	$badge        = gofly_flight_deals_get_meta( $post_id, '_gfd_deal_badge' );
-	$booking_url  = gofly_flight_deals_get_meta( $post_id, '_gfd_booking_url' );
+	$booking_url = gofly_flight_deals_get_meta( $post_id, '_gfd_booking_url' );
+if ( empty( $booking_url ) ) {
+    $booking_url = gofly_flight_deals_get_option( 'default_booking_url', '' );
+}
 	$expiry       = gofly_flight_deals_get_meta( $post_id, '_gfd_deal_expiry' );
 
 	$classes_map  = gofly_flight_deals_travel_classes();

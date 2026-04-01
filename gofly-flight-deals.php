@@ -3,8 +3,8 @@
  * Plugin Name:       GoFly Flight Deals
  * Plugin URI:        https://yoursite.com/gofly-flight-deals
  * Description:       Adds a Flight Deals custom post type with Elementor widgets for the GoFly theme.
- * Version:           1.0.1
- * Author:            Your Name
+ * Version:           1.0.2
+ * Author:            Umair Ilyas
  * License:           GPL-2.0+
  * Text Domain:       gofly-flight-deals
  * Domain Path:       /languages
@@ -12,7 +12,7 @@
 
 if ( ! defined( 'ABSPATH' ) ) { exit; }
 
-define( 'GFD_VERSION',     '1.0.1' );
+define( 'GFD_VERSION',     '1.0.2' );
 define( 'GFD_PLUGIN_FILE', __FILE__ );
 define( 'GFD_PLUGIN_DIR',  plugin_dir_path( __FILE__ ) );
 define( 'GFD_PLUGIN_URL',  plugin_dir_url( __FILE__ ) );
