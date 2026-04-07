@@ -1,39 +1,42 @@
 <?php
 /**
  * Partial: Deal Card
- * Available vars: $post (current WP_Post), $settings (Elementor widget settings, if set)
  */
 if ( ! defined( 'ABSPATH' ) ) { exit; }
 
-$post_id        = get_the_ID();
-$origin_city    = gofly_flight_deals_get_meta( $post_id, '_gfd_origin_city' );
-$origin_code    = gofly_flight_deals_get_meta( $post_id, '_gfd_origin_code' );
-$dest_city      = gofly_flight_deals_get_meta( $post_id, '_gfd_destination_city' );
-$dest_code      = gofly_flight_deals_get_meta( $post_id, '_gfd_destination_code' );
-$airline        = gofly_flight_deals_get_meta( $post_id, '_gfd_airline_name' );
-$airline_logo   = gofly_flight_deals_get_meta( $post_id, '_gfd_airline_logo' );
-$price          = gofly_flight_deals_get_meta( $post_id, '_gfd_price' );
-$currency       = gofly_flight_deals_get_meta( $post_id, '_gfd_currency' );
-$orig_price     = gofly_flight_deals_get_meta( $post_id, '_gfd_original_price' );
-$travel_class   = gofly_flight_deals_get_meta( $post_id, '_gfd_travel_class' );
-$stops          = gofly_flight_deals_get_meta( $post_id, '_gfd_stops' );
-$departure      = gofly_flight_deals_get_meta( $post_id, '_gfd_departure_date' );
-$flexibility    = gofly_flight_deals_get_meta( $post_id, '_gfd_travel_date_flexibility' );
-$badge          = gofly_flight_deals_get_meta( $post_id, '_gfd_deal_badge' );
-$booking_url = gofly_flight_deals_get_meta( $post_id, '_gfd_booking_url' );
+$post_id       = get_the_ID();
+$origin_city   = gofly_flight_deals_get_meta( $post_id, '_gfd_origin_city' );
+$origin_code   = gofly_flight_deals_get_meta( $post_id, '_gfd_origin_code' );
+$dest_city     = gofly_flight_deals_get_meta( $post_id, '_gfd_destination_city' );
+$dest_code     = gofly_flight_deals_get_meta( $post_id, '_gfd_destination_code' );
+$airline       = gofly_flight_deals_get_meta( $post_id, '_gfd_airline_name' );
+$airline_logo  = gofly_flight_deals_get_meta( $post_id, '_gfd_airline_logo' );
+$price         = gofly_flight_deals_get_meta( $post_id, '_gfd_price' );
+$currency      = gofly_flight_deals_get_meta( $post_id, '_gfd_currency' );
+$orig_price    = gofly_flight_deals_get_meta( $post_id, '_gfd_original_price' );
+$travel_class  = gofly_flight_deals_get_meta( $post_id, '_gfd_travel_class' );
+$stops         = gofly_flight_deals_get_meta( $post_id, '_gfd_stops' );
+$departure     = gofly_flight_deals_get_meta( $post_id, '_gfd_departure_date' );
+$flexibility   = gofly_flight_deals_get_meta( $post_id, '_gfd_travel_date_flexibility' );
+$badge         = gofly_flight_deals_get_meta( $post_id, '_gfd_deal_badge' );
+$booking_url   = gofly_flight_deals_get_meta( $post_id, '_gfd_booking_url' );
+$is_featured   = gofly_flight_deals_get_meta( $post_id, '_gfd_is_featured' );
+$expiry        = gofly_flight_deals_get_meta( $post_id, '_gfd_deal_expiry' );
+
+// Fall back to global default booking URL.
 if ( empty( $booking_url ) ) {
-    $booking_url = gofly_flight_deals_get_option( 'default_booking_url', '' );
+	$booking_url = gofly_flight_deals_get_option( 'default_booking_url', '' );
 }
-$is_featured    = gofly_flight_deals_get_meta( $post_id, '_gfd_is_featured' );
-$expiry         = gofly_flight_deals_get_meta( $post_id, '_gfd_deal_expiry' );
 
-$book_now_text = gofly_flight_deals_get_option( 'book_now_text', __( 'Book Now', 'gofly-flight-deals' ) );
+$book_now_text = gofly_flight_deals_get_option( 'book_now_text', __( 'Inquire Now', 'gofly-flight-deals' ) );
+$cf7_form_id   = gofly_flight_deals_get_option( 'inquiry_cf7_id', 0 );
+$use_popup     = ! empty( $cf7_form_id );
 
-// Elementor widget settings.
-$show_badge          = ! isset( $settings ) || ( isset( $settings['show_badge'] )          && 'yes' === $settings['show_badge'] );
-$show_logo           = ! isset( $settings ) || ( isset( $settings['show_airline_logo'] )   && 'yes' === $settings['show_airline_logo'] );
-$show_orig_price     = ! isset( $settings ) || ( isset( $settings['show_original_price'] ) && 'yes' === $settings['show_original_price'] );
-$show_stops          = ! isset( $settings ) || ( isset( $settings['show_stops'] )          && 'yes' === $settings['show_stops'] );
+// Widget settings context.
+$show_badge      = ! isset( $settings ) || ( isset( $settings['show_badge'] )          && 'yes' === $settings['show_badge'] );
+$show_logo       = ! isset( $settings ) || ( isset( $settings['show_airline_logo'] )   && 'yes' === $settings['show_airline_logo'] );
+$show_orig_price = ! isset( $settings ) || ( isset( $settings['show_original_price'] ) && 'yes' === $settings['show_original_price'] );
+$show_stops      = ! isset( $settings ) || ( isset( $settings['show_stops'] )          && 'yes' === $settings['show_stops'] );
 
 $classes_map  = gofly_flight_deals_travel_classes();
 $stops_map    = gofly_flight_deals_stops_options();
@@ -44,10 +47,12 @@ $card_classes = 'gfd-deal-card';
 if ( $is_featured ) { $card_classes .= ' gfd-deal-card--featured'; }
 
 $ga_enabled = gofly_flight_deals_get_option( 'ga_book_now', '0' );
-$ga_attrs   = '';
-if ( '1' === $ga_enabled ) {
-	$ga_attrs = ' data-gfd-ga-event="book_now" data-gfd-deal-id="' . esc_attr( $post_id ) . '" data-gfd-destination="' . esc_attr( $dest_city ) . '"';
-}
+
+// Label for origin/destination shown in the form.
+$origin_label = $origin_city ? $origin_city : $origin_code;
+$dest_label   = $dest_city   ? $dest_city   : $dest_code;
+$price_label  = gofly_flight_deals_format_price( $price, $currency );
+$deal_title   = get_the_title();
 ?>
 <article class="<?php echo esc_attr( $card_classes ); ?>" data-expiry="<?php echo esc_attr( $expiry ); ?>">
 
@@ -58,7 +63,7 @@ if ( '1' === $ga_enabled ) {
 	<div class="gfd-deal-card__header">
 		<?php if ( $show_logo && $airline_logo ) : ?>
 			<div class="gfd-deal-card__logo">
-				<?php echo wp_get_attachment_image( $airline_logo, array( 80, 40 ), false, array( 'alt' => esc_attr( $airline ) ) ); ?>
+				<?php echo wp_get_attachment_image( $airline_logo, 'full', false, array( 'alt' => esc_attr( $airline ) ) ); ?>
 			</div>
 		<?php endif; ?>
 		<?php if ( $airline ) : ?>
@@ -114,12 +119,23 @@ if ( '1' === $ga_enabled ) {
 	<?php endif; ?>
 
 	<div class="gfd-deal-card__footer">
-		<?php if ( $booking_url ) : ?>
+		<?php if ( $use_popup ) : ?>
+			<!-- Popup trigger button — data attributes carry deal info to the form -->
+			<button type="button"
+				class="gfd-deal-card__btn gfd-inquiry-trigger"
+				data-origin="<?php echo esc_attr( $origin_label ); ?>"
+				data-destination="<?php echo esc_attr( $dest_label ); ?>"
+				data-price="<?php echo esc_attr( $price_label ); ?>"
+				data-title="<?php echo esc_attr( $deal_title ); ?>"
+				<?php echo '1' === $ga_enabled ? 'data-gfd-ga-event="inquire_now" data-gfd-deal-id="' . esc_attr( $post_id ) . '"' : ''; ?>>
+				<?php echo esc_html( $book_now_text ); ?>
+			</button>
+		<?php elseif ( $booking_url ) : ?>
 			<a href="<?php echo esc_url( $booking_url ); ?>"
 			   class="gfd-deal-card__btn"
 			   target="_blank"
 			   rel="noopener noreferrer"
-			   <?php echo $ga_attrs; // already escaped above ?>>
+			   <?php echo '1' === $ga_enabled ? 'data-gfd-ga-event="book_now" data-gfd-deal-id="' . esc_attr( $post_id ) . '"' : ''; ?>>
 				<?php echo esc_html( $book_now_text ); ?>
 			</a>
 		<?php else : ?>

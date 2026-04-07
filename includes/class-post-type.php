@@ -99,3 +99,73 @@ class GFD_Post_Type {
 }
 
 GFD_Post_Type::init();
+
+// Add image field to "Add New Airline" form.
+add_action( 'flight_deal_airline_add_form_fields', function() {
+    ?>
+    <div class="form-field">
+        <label><?php esc_html_e( 'Airline Logo', 'gofly-flight-deals' ); ?></label>
+        <div class="gfd-term-image-wrap">
+            <input type="hidden" name="gfd_term_image_id" id="gfd_term_image_id" value="" />
+            <div id="gfd_term_image_preview"></div>
+            <button type="button" class="button gfd-upload-term-image"><?php esc_html_e( 'Upload Logo', 'gofly-flight-deals' ); ?></button>
+        </div>
+    </div>
+    <?php
+} );
+
+// Add image field to "Edit Airline" form.
+add_action( 'flight_deal_airline_edit_form_fields', function( $term ) {
+    $image_id  = get_term_meta( $term->term_id, 'gfd_airline_image_id', true );
+    $image_url = $image_id ? wp_get_attachment_image_url( absint( $image_id ), 'thumbnail' ) : '';
+    ?>
+    <tr class="form-field">
+        <th><label><?php esc_html_e( 'Airline Logo', 'gofly-flight-deals' ); ?></label></th>
+        <td>
+            <div class="gfd-term-image-wrap">
+                <input type="hidden" name="gfd_term_image_id" id="gfd_term_image_id" value="<?php echo esc_attr( $image_id ); ?>" />
+                <div id="gfd_term_image_preview">
+                    <?php if ( $image_url ) : ?>
+                        <img src="<?php echo esc_url( $image_url ); ?>" style="max-height:60px;width:auto;" />
+                    <?php endif; ?>
+                </div>
+                <button type="button" class="button gfd-upload-term-image"><?php esc_html_e( 'Upload Logo', 'gofly-flight-deals' ); ?></button>
+                <?php if ( $image_id ) : ?>
+                    <button type="button" class="button gfd-remove-term-image"><?php esc_html_e( 'Remove', 'gofly-flight-deals' ); ?></button>
+                <?php endif; ?>
+            </div>
+        </td>
+    </tr>
+    <?php
+} );
+
+// Save image on term create.
+add_action( 'created_flight_deal_airline', function( $term_id ) {
+    if ( isset( $_POST['gfd_term_image_id'] ) ) {
+        update_term_meta( $term_id, 'gfd_airline_image_id', absint( $_POST['gfd_term_image_id'] ) );
+    }
+} );
+
+// Save image on term update.
+add_action( 'edited_flight_deal_airline', function( $term_id ) {
+    if ( isset( $_POST['gfd_term_image_id'] ) ) {
+        update_term_meta( $term_id, 'gfd_airline_image_id', absint( $_POST['gfd_term_image_id'] ) );
+    }
+} );
+
+// Show image column in airlines list.
+add_filter( 'manage_edit-flight_deal_airline_columns', function( $columns ) {
+    $new = array( 'cb' => $columns['cb'], 'gfd_logo' => __( 'Logo', 'gofly-flight-deals' ) );
+    return array_merge( $new, $columns );
+} );
+
+add_filter( 'manage_flight_deal_airline_custom_column', function( $content, $column, $term_id ) {
+    if ( 'gfd_logo' === $column ) {
+        $image_id = get_term_meta( $term_id, 'gfd_airline_image_id', true );
+        if ( $image_id ) {
+            return wp_get_attachment_image( absint( $image_id ), array( 60, 30 ), false, array( 'style' => 'height:30px;width:auto;object-fit:contain;' ) );
+        }
+        return '—';
+    }
+    return $content;
+}, 10, 3 );

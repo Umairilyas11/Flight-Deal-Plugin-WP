@@ -25,22 +25,28 @@ while ( have_posts() ) :
 	$flexibility  = gofly_flight_deals_get_meta( $post_id, '_gfd_travel_date_flexibility' );
 	$duration     = gofly_flight_deals_get_meta( $post_id, '_gfd_duration_nights' );
 	$badge        = gofly_flight_deals_get_meta( $post_id, '_gfd_deal_badge' );
-	$booking_url = gofly_flight_deals_get_meta( $post_id, '_gfd_booking_url' );
-if ( empty( $booking_url ) ) {
-    $booking_url = gofly_flight_deals_get_option( 'default_booking_url', '' );
-}
+	$booking_url  = gofly_flight_deals_get_meta( $post_id, '_gfd_booking_url' );
 	$expiry       = gofly_flight_deals_get_meta( $post_id, '_gfd_deal_expiry' );
 
-	$classes_map  = gofly_flight_deals_travel_classes();
-	$stops_map    = gofly_flight_deals_stops_options();
-	$class_label  = isset( $classes_map[ $travel_class ] ) ? $classes_map[ $travel_class ] : '';
-	$stops_label  = isset( $stops_map[ $stops ] ) ? $stops_map[ $stops ] : '';
-	$book_now_text = gofly_flight_deals_get_option( 'book_now_text', __( 'Book Now', 'gofly-flight-deals' ) );
-	$ga_enabled   = gofly_flight_deals_get_option( 'ga_book_now', '0' );
+	if ( empty( $booking_url ) ) {
+		$booking_url = gofly_flight_deals_get_option( 'default_booking_url', '' );
+	}
+
+	$classes_map   = gofly_flight_deals_travel_classes();
+	$stops_map     = gofly_flight_deals_stops_options();
+	$class_label   = isset( $classes_map[ $travel_class ] ) ? $classes_map[ $travel_class ] : '';
+	$stops_label   = isset( $stops_map[ $stops ] ) ? $stops_map[ $stops ] : '';
+	$book_now_text = gofly_flight_deals_get_option( 'book_now_text', __( 'Inquire Now', 'gofly-flight-deals' ) );
+	$ga_enabled    = gofly_flight_deals_get_option( 'ga_book_now', '0' );
+	$cf7_form_id   = gofly_flight_deals_get_option( 'inquiry_cf7_id', 0 );
+	$use_popup     = ! empty( $cf7_form_id );
+
+	$origin_label = $origin_city ? $origin_city : $origin_code;
+$dest_label   = $dest_city   ? $dest_city   : $dest_code;
+	$price_label  = gofly_flight_deals_format_price( $price, $currency );
 ?>
 <div class="gfd-single-wrap">
 
-	<!-- HERO -->
 	<div class="gfd-single-hero">
 		<?php if ( has_post_thumbnail() ) : ?>
 			<div class="gfd-single-hero__bg"><?php the_post_thumbnail( 'full' ); ?></div>
@@ -63,11 +69,9 @@ if ( empty( $booking_url ) ) {
 		</div>
 	</div>
 
-	<!-- MAIN CONTENT -->
 	<div class="gfd-single-main">
 		<div class="gfd-single-details">
 
-			<!-- AIRLINE -->
 			<div class="gfd-single-airline">
 				<?php if ( $airline_logo ) : ?>
 					<?php echo wp_get_attachment_image( $airline_logo, array( 120, 60 ), false, array( 'alt' => esc_attr( $airline ) ) ); ?>
@@ -75,25 +79,20 @@ if ( empty( $booking_url ) ) {
 				<span><?php echo esc_html( $airline ); ?></span>
 			</div>
 
-			<!-- PRICING -->
 			<div class="gfd-single-pricing">
 				<div class="gfd-single-pricing__price">
-					<?php echo esc_html( gofly_flight_deals_format_price( $price, $currency ) ); ?>
+					<?php echo esc_html( $price_label ); ?>
 				</div>
 				<?php if ( $orig_price && $orig_price > $price ) : ?>
 					<div class="gfd-single-pricing__orig">
 						<?php echo esc_html( gofly_flight_deals_format_price( $orig_price, $currency ) ); ?>
 					</div>
 					<div class="gfd-single-pricing__save">
-						<?php
-						$saving = $orig_price - $price;
-						printf( esc_html__( 'Save %s!', 'gofly-flight-deals' ), esc_html( gofly_flight_deals_format_price( $saving, $currency ) ) );
-						?>
+						<?php printf( esc_html__( 'Save %s!', 'gofly-flight-deals' ), esc_html( gofly_flight_deals_format_price( $orig_price - $price, $currency ) ) ); ?>
 					</div>
 				<?php endif; ?>
 			</div>
 
-			<!-- TAGS -->
 			<div class="gfd-single-tags">
 				<?php if ( $class_label ) : ?>
 					<span class="gfd-deal-card__tag gfd-deal-card__tag--class"><?php echo esc_html( $class_label ); ?></span>
@@ -106,7 +105,6 @@ if ( empty( $booking_url ) ) {
 				<?php endif; ?>
 			</div>
 
-			<!-- DATES -->
 			<div class="gfd-single-dates">
 				<?php if ( $departure ) : ?>
 					<div class="gfd-single-dates__item">
@@ -122,12 +120,11 @@ if ( empty( $booking_url ) ) {
 				<?php endif; ?>
 				<?php if ( $flexibility ) : ?>
 					<div class="gfd-single-dates__item gfd-single-dates__item--flex">
-						<span class="dashicons dashicons-calendar-alt"></span> <?php echo esc_html( $flexibility ); ?>
+						<?php echo esc_html( $flexibility ); ?>
 					</div>
 				<?php endif; ?>
 			</div>
 
-			<!-- EXPIRY COUNTDOWN -->
 			<?php if ( $expiry ) : ?>
 				<div class="gfd-single-expiry" data-expiry="<?php echo esc_attr( $expiry ); ?>">
 					<strong><?php esc_html_e( 'Deal expires in:', 'gofly-flight-deals' ); ?></strong>
@@ -135,7 +132,6 @@ if ( empty( $booking_url ) ) {
 				</div>
 			<?php endif; ?>
 
-			<!-- DESCRIPTION -->
 			<?php if ( get_the_content() ) : ?>
 				<div class="gfd-single-description">
 					<h3><?php esc_html_e( 'About This Deal', 'gofly-flight-deals' ); ?></h3>
@@ -144,8 +140,18 @@ if ( empty( $booking_url ) ) {
 			<?php endif; ?>
 
 			<!-- CTA -->
-			<?php if ( $booking_url ) : ?>
-				<div class="gfd-single-cta">
+			<div class="gfd-single-cta">
+				<?php if ( $use_popup ) : ?>
+					<button type="button"
+						class="gfd-deal-card__btn gfd-deal-card__btn--large gfd-inquiry-trigger"
+						data-origin="<?php echo esc_attr( $origin_label ); ?>"
+						data-destination="<?php echo esc_attr( $dest_label ); ?>"
+						data-price="<?php echo esc_attr( $price_label ); ?>"
+						data-title="<?php echo esc_attr( get_the_title() ); ?>"
+						<?php echo '1' === $ga_enabled ? 'data-gfd-ga-event="inquire_now" data-gfd-deal-id="' . esc_attr( $post_id ) . '"' : ''; ?>>
+						<?php echo esc_html( $book_now_text ); ?>
+					</button>
+				<?php elseif ( $booking_url ) : ?>
 					<a href="<?php echo esc_url( $booking_url ); ?>"
 					   class="gfd-deal-card__btn gfd-deal-card__btn--large"
 					   target="_blank"
@@ -153,25 +159,20 @@ if ( empty( $booking_url ) ) {
 					   <?php echo '1' === $ga_enabled ? 'data-gfd-ga-event="book_now" data-gfd-deal-id="' . esc_attr( $post_id ) . '"' : ''; ?>>
 						<?php echo esc_html( $book_now_text ); ?>
 					</a>
-				</div>
-			<?php endif; ?>
+				<?php endif; ?>
+			</div>
 		</div>
 	</div>
 
-	<!-- RELATED DEALS -->
 	<?php
 	$destination_terms = wp_get_post_terms( $post_id, 'flight_deal_destination', array( 'fields' => 'ids' ) );
 	if ( ! empty( $destination_terms ) && ! is_wp_error( $destination_terms ) ) :
-		$related_args = array(
+		$related_args  = array(
 			'post_type'      => 'flight_deal',
 			'post_status'    => 'publish',
 			'posts_per_page' => 3,
 			'post__not_in'   => array( $post_id ),
-			'tax_query'      => array( array(
-				'taxonomy' => 'flight_deal_destination',
-				'field'    => 'term_id',
-				'terms'    => $destination_terms,
-			) ),
+			'tax_query'      => array( array( 'taxonomy' => 'flight_deal_destination', 'field' => 'term_id', 'terms' => $destination_terms ) ),
 			'meta_query'     => array( gofly_flight_deals_expiry_meta_query() ),
 		);
 		$related_query = new WP_Query( $related_args );

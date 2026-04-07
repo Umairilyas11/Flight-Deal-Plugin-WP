@@ -54,23 +54,21 @@ class GFD_Meta_Boxes {
 			</div>
 			<div class="gfd-meta-row gfd-meta-row--half">
 				<div class="gfd-field">
-					<label><?php esc_html_e( 'Airline Name', 'gofly-flight-deals' ); ?></label>
-					<input type="text" name="_gfd_airline_name" value="<?php echo $m('_gfd_airline_name'); ?>" placeholder="e.g. Emirates" />
-				</div>
-				<div class="gfd-field">
-					<label><?php esc_html_e( 'Airline Logo', 'gofly-flight-deals' ); ?></label>
-					<div class="gfd-image-upload">
-						<input type="hidden" name="_gfd_airline_logo" id="gfd_airline_logo" value="<?php echo esc_attr( $airline_logo_id ); ?>" />
-						<div class="gfd-image-preview">
-							<?php if ( $airline_logo_url ) : ?>
-								<img src="<?php echo esc_url( $airline_logo_url ); ?>" alt="" />
-							<?php endif; ?>
-						</div>
-						<button type="button" class="button gfd-upload-image" data-target="gfd_airline_logo"><?php esc_html_e( 'Select Image', 'gofly-flight-deals' ); ?></button>
-						<?php if ( $airline_logo_id ) : ?>
-							<button type="button" class="button gfd-remove-image"><?php esc_html_e( 'Remove', 'gofly-flight-deals' ); ?></button>
-						<?php endif; ?>
-					</div>
+    				<label><?php esc_html_e( 'Airline', 'gofly-flight-deals' ); ?></label>
+    					<?php
+    						$selected_terms = wp_get_post_terms( $post->ID, 'flight_deal_airline', array( 'fields' => 'ids' ) );
+    						$selected_term  = ! empty( $selected_terms ) && ! is_wp_error( $selected_terms ) ? $selected_terms[0] : 0;
+    						$airline_terms  = get_terms( array( 'taxonomy' => 'flight_deal_airline', 'hide_empty' => false ) );
+    					?>
+   	 				<select name="gfd_airline_term_id">
+						<option value="0"><?php esc_html_e( '— Select Airline —', 'gofly-flight-deals' ); ?></option>
+        					<?php foreach ( $airline_terms as $term ) : ?>
+            			<option value="<?php echo esc_attr( $term->term_id ); ?>" <?php selected( $selected_term, $term->term_id ); ?>>
+                			<?php echo esc_html( $term->name ); ?>
+            			</option>
+						<?php endforeach; ?>
+    				</select>
+    					<p class="description"><?php esc_html_e( 'Manage airlines under Flight Deals → Airlines.', 'gofly-flight-deals' ); ?></p>
 				</div>
 			</div>
 			<div class="gfd-meta-row gfd-meta-row--third">
@@ -164,7 +162,7 @@ class GFD_Meta_Boxes {
 
 		$text_fields = array(
 			'_gfd_origin_city', '_gfd_origin_code', '_gfd_destination_city', '_gfd_destination_code',
-			'_gfd_airline_name', '_gfd_travel_class', '_gfd_stops', '_gfd_travel_date_flexibility',
+			 '_gfd_travel_class', '_gfd_stops', '_gfd_travel_date_flexibility',
 			'_gfd_deal_badge', '_gfd_currency', '_gfd_departure_date', '_gfd_return_date', '_gfd_deal_expiry',
 		);
 		foreach ( $text_fields as $field ) {
@@ -174,7 +172,7 @@ class GFD_Meta_Boxes {
 		}
 
 		// absint for numeric / attachment ID fields.
-		$absint_fields = array( '_gfd_price', '_gfd_original_price', '_gfd_duration_nights', '_gfd_airline_logo' );
+		$absint_fields = array( '_gfd_price', '_gfd_original_price', '_gfd_duration_nights' );
 		foreach ( $absint_fields as $field ) {
 			if ( isset( $_POST[ $field ] ) ) {
 				// Price fields can be decimals — store as sanitized float string.
@@ -193,6 +191,22 @@ class GFD_Meta_Boxes {
 
 		$featured = isset( $_POST['_gfd_is_featured'] ) ? '1' : '0';
 		update_post_meta( $post_id, '_gfd_is_featured', $featured );
+		// Save airline taxonomy selection.
+		if ( isset( $_POST['gfd_airline_term_id'] ) ) {
+    		$term_id = absint( $_POST['gfd_airline_term_id'] );
+    	if ( $term_id ) {
+        	wp_set_post_terms( $post_id, array( $term_id ), 'flight_deal_airline' );
+        	// Also save the name and image ID as meta for easy retrieval in templates.
+       		 $term = get_term( $term_id, 'flight_deal_airline' );
+        if ( $term && ! is_wp_error( $term ) ) {
+            update_post_meta( $post_id, '_gfd_airline_name', $term->name );
+            $image_id = get_term_meta( $term_id, 'gfd_airline_image_id', true );
+            update_post_meta( $post_id, '_gfd_airline_logo', $image_id );
+        }
+    		} else {
+       			wp_set_post_terms( $post_id, array(), 'flight_deal_airline' );
+    		}
+		}
 	}
 }
 
